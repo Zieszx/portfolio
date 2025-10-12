@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import './main.css';
 import './custom.css';
 // Import images
-import profileImg from '/assets/img/my-profile-img.jpg';
+import profileImg from '/assets/img/my-profile-img.jpg?url';
 
 // Component imports
 import Home from './components/Home';
