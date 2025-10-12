@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 // Portfolio project images
-import aiCodePrediction from '/assets/img/portfolio/ai-code-prediction.jpg';
-import bgRemover from '/assets/img/portfolio/bg-remover.jpg';
-import pawsPreferences from '/assets/img/portfolio/paws-preferences.png';
-import hastaCarRental from '/assets/img/portfolio/hasta-car-rental.jpg';
-import instagramClone from '/assets/img/portfolio/instagram-clone.jpg';
-import userRegistration from '/assets/img/portfolio/user-registration.jpg';
-import dashboardPiwn from '/assets/img/portfolio/dashboard-piwn.jpg';
-import ezyBooking from '/assets/img/portfolio/ezy-booking.jpg';
-import aibigWebsite from '/assets/img/portfolio/aibig-website.jpg';
-import resipro from '/assets/img/portfolio/resipro.jpg';
+import aiCodePrediction from '/assets/img/portfolio/ai-code-prediction.jpg?url';
+import bgRemover from '/assets/img/portfolio/bg-remover.jpg?url';
+import pawsPreferences from '/assets/img/portfolio/paws-preferences.png?url';
+import hastaCarRental from '/assets/img/portfolio/hasta-car-rental.jpg?url';
+import instagramClone from '/assets/img/portfolio/instagram-clone.jpg?url';
+import userRegistration from '/assets/img/portfolio/user-registration.jpg?url';
+import dashboardPiwn from '/assets/img/portfolio/dashboard-piwn.jpg?url';
+import ezyBooking from '/assets/img/portfolio/ezy-booking.jpg?url';
+import aibigWebsite from '/assets/img/portfolio/aibig-website.jpg?url';
+import resipro from '/assets/img/portfolio/resipro.jpg?url';
 
 function Portfolio() {
   const [activeFilter, setActiveFilter] = useState('*');

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import heroBg from '/assets/img/hero-bg.jpg';
+import heroBg from '/assets/img/hero-bg.jpg?url';
 
 function Home() {
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import profileImg from '/assets/img/my-profile-img.jpg';
+import profileImg from '../assets/my-profile-img.jpg';
 import { StatsItem } from '../styles';
 
 function About() {
