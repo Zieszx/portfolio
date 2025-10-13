@@ -39,7 +39,7 @@ function Skills() {
 
   return (
     <div className="container px-5">
-      <section id="skills" className="skills section light-background">
+      <section id="skills" className="skills section">
         <div className="container section-title" data-aos="fade-up">
           <h2>Skills</h2>
           <p>My technical expertise organized by categories - from programming languages to tools and soft skills</p>

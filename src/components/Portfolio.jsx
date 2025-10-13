@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 // Portfolio project images
-import aiCodePrediction from '/assets/img/portfolio/ai-code-prediction.jpg?url';
-import bgRemover from '/assets/img/portfolio/bg-remover.jpg?url';
+import aiCodePrediction from '/assets/img/portfolio/ai-code-prediction.png?url';
+import bgRemover from '/assets/img/portfolio/bg-remover.png?url';
 import pawsPreferences from '/assets/img/portfolio/paws-preferences.png?url';
 import hastaCarRental from '/assets/img/portfolio/hasta-car-rental.jpg?url';
 import instagramClone from '/assets/img/portfolio/instagram-clone.jpg?url';
 import userRegistration from '/assets/img/portfolio/user-registration.jpg?url';
-import dashboardPiwn from '/assets/img/portfolio/dashboard-piwn.jpg?url';
-import ezyBooking from '/assets/img/portfolio/ezy-booking.jpg?url';
+import dashboardPiwn from '/assets/img/portfolio/dashboard-piwn.png?url';
+import ezyBooking from '/assets/img/portfolio/ezy-booking.png?url';
 import aibigWebsite from '/assets/img/portfolio/aibig-website.jpg?url';
 import resipro from '/assets/img/portfolio/resipro.jpg?url';
 
@@ -135,7 +135,7 @@ function Portfolio() {
 
   return (
     <div className="container px-5">
-      <section id="portfolio" className="portfolio section light-background">
+      <section id="portfolio" className="portfolio section">
         <div className="container section-title" data-aos="fade-up">
           <h2>Portfolio</h2>
           <p>Featured projects showcasing my expertise in software development, AI solutions, and innovative applications</p>

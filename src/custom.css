@@ -178,6 +178,7 @@
 
 .portfolio-filters li:hover,
 .portfolio-filters li.filter-active {
+  padding: 0.5rem !important;
   color: var(--contrast-color);
   background: var(--accent-color);
   border-color: var(--accent-color);

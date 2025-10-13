@@ -787,11 +787,6 @@ section,
   transition: all 0.3s ease-in-out;
 }
 
-.portfolio .portfolio-filters li:hover,
-.portfolio .portfolio-filters li.filter-active {
-  color: var(--accent-color);
-}
-
 .portfolio .portfolio-filters li:first-child {
   margin-left: 0;
 }
