@@ -5,7 +5,7 @@ import bgRemover from '/assets/img/portfolio/bg-remover.png?url';
 import pawsPreferences from '/assets/img/portfolio/paws-preferences.png?url';
 import hastaCarRental from '/assets/img/portfolio/hasta-car-rental.jpg?url';
 import instagramClone from '/assets/img/portfolio/instagram-clone.jpg?url';
-import userRegistration from '/assets/img/portfolio/user-registration.jpg?url';
+import userRegistration from '/assets/img/portfolio/user-registration.png?url';
 import dashboardPiwn from '/assets/img/portfolio/dashboard-piwn.png?url';
 import ezyBooking from '/assets/img/portfolio/ezy-booking.png?url';
 import aibigWebsite from '/assets/img/portfolio/aibig-website.jpg?url';
