@@ -7,9 +7,7 @@ function Resume() {
 
   const handleDownloadResume = async () => {
     setIsDownloading(true);
-
     try {
-      // Download the actual PDF resume
       const link = document.createElement('a');
       link.href = resumePdf;
       link.download = 'IESKANDARZULQARNAIN_Resume.pdf';
@@ -18,22 +16,20 @@ function Resume() {
       link.click();
       document.body.removeChild(link);
 
-      // Show success feedback
       setTimeout(() => {
         Swal.fire({
-          title: 'Success!',
-          text: 'Resume downloaded successfully!',
+          title: 'Downloaded!',
+          text: 'Resume downloaded successfully.',
           icon: 'success',
           confirmButtonColor: 'var(--accent-color)',
           timer: 3000,
           timerProgressBar: true,
         });
       }, 100);
-    } catch (error) {
-      console.error('Error downloading resume:', error);
+    } catch {
       Swal.fire({
-        title: 'Error!',
-        text: 'Error downloading resume. Please try again.',
+        title: 'Oops!',
+        text: 'Could not download resume. Please try again.',
         icon: 'error',
         confirmButtonColor: 'var(--accent-color)',
       });
@@ -42,81 +38,48 @@ function Resume() {
     }
   };
 
-  const handlePreviewResume = () => {
-    // Open resume in new tab for preview
-    window.open(resumePdf, '_blank');
-  };
+  const handlePreviewResume = () => window.open(resumePdf, '_blank');
 
   return (
-    <div className="container px-5">
+    <div className="container px-4 px-md-5">
       <section id="resume" className="resume section">
         <div className="container section-title" data-aos="fade-up">
           <h2>Resume</h2>
-          <p>My professional journey showcasing education, experience, and key achievements in software development</p>
-          <div className="d-flex justify-content-center gap-3 flex-wrap pt-3">
+          <p>My professional journey — education, experience, and key achievements in software development.</p>
+
+          <div className="resume-actions d-flex justify-content-center gap-3 flex-wrap pt-3">
             <button
               onClick={handleDownloadResume}
               disabled={isDownloading}
-              className="btn btn-primary"
-              style={{
-                background: isDownloading ? '#ccc' : 'linear-gradient(135deg, var(--accent-color), #66d9ff)',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '12px 25px',
-                fontSize: '16px',
-                fontWeight: '500',
-                color: 'white',
-                cursor: isDownloading ? 'not-allowed' : 'pointer',
-                transition: 'all 0.3s ease',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                opacity: isDownloading ? 0.7 : 1,
-              }}
+              className="resume-btn resume-btn-primary"
               onMouseOver={(e) => {
                 if (!isDownloading) {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 8px 25px rgba(0, 180, 216, 0.3)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 180, 216, 0.35)';
                 }
               }}
               onMouseOut={(e) => {
-                if (!isDownloading) {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}>
               <i className={`bi ${isDownloading ? 'bi-hourglass-split' : 'bi-download'}`}></i>
-              {isDownloading ? 'Downloading...' : 'Download Resume'}
+              {isDownloading ? 'Downloading…' : 'Download Resume'}
             </button>
 
             <button
               onClick={handlePreviewResume}
-              className="btn btn-outline-primary"
-              style={{
-                border: '2px solid var(--accent-color)',
-                borderRadius: '8px',
-                padding: '12px 25px',
-                fontSize: '16px',
-                fontWeight: '500',
-                color: 'var(--accent-color)',
-                backgroundColor: 'transparent',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
+              className="resume-btn resume-btn-outline"
               onMouseOver={(e) => {
-                e.target.style.backgroundColor = 'var(--accent-color)';
-                e.target.style.color = 'white';
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 8px 25px rgba(0, 180, 216, 0.3)';
+                e.currentTarget.style.background = 'var(--accent-color)';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 180, 216, 0.3)';
               }}
               onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.color = 'var(--accent-color)';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = 'none';
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = 'var(--accent-color)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}>
               <i className="bi bi-eye"></i>
               Preview Resume
@@ -126,12 +89,13 @@ function Resume() {
 
         <div className="container">
           <div className="row">
+            {/* Left column — Summary + Education */}
             <div className="col-lg-6" data-aos="fade-up" data-aos-delay="100">
               <h3 className="resume-title">Summary</h3>
               <div className="resume-item pb-0">
                 <h4>Ieskandar Zulqarnain</h4>
                 <p>
-                  <em>Passionate and self-motivated Software Developer with over a year of professional experience in full-stack development, R&D software projects, and AI-driven solutions. Eager to contribute technical skills and problem-solving abilities to innovative projects.</em>
+                  <em>Passionate and self-motivated Software Developer with over a year of professional experience in full-stack development, R&amp;D software projects, and AI-driven solutions. Eager to contribute technical skills and problem-solving abilities to innovative projects.</em>
                 </p>
                 <ul>
                   <li>Shah Alam, Selangor, Malaysia</li>
@@ -143,16 +107,16 @@ function Resume() {
               <h3 className="resume-title">Education</h3>
               <div className="resume-item">
                 <h4>Bachelor of Computer Science (Software Engineering)</h4>
-                <h5>Oct 2020 - Oct 2024</h5>
+                <h5>Oct 2020 – Oct 2024</h5>
                 <p>
                   <em>Universiti Teknologi Malaysia (UTM)</em>
                 </p>
-                <p>CGPA: 3.96 - Dean's List every semester. Specialized in Data Structures & Algorithms, Databases, Software Engineering, and Real-Time Software Engineering.</p>
+                <p>CGPA: 3.96 — Dean&apos;s List every semester. Specialised in Data Structures &amp; Algorithms, Databases, Software Engineering, and Real-Time Software Engineering.</p>
               </div>
 
               <div className="resume-item">
                 <h4>Science Stream Module</h4>
-                <h5>Apr 2019 - Apr 2020</h5>
+                <h5>Apr 2019 – Apr 2020</h5>
                 <p>
                   <em>Kelantan Matriculation College (KMKt)</em>
                 </p>
@@ -161,7 +125,7 @@ function Resume() {
 
               <div className="resume-item">
                 <h4>Science Stream SPM</h4>
-                <h5>Jan 2017 - Dec 2018</h5>
+                <h5>Jan 2017 – Dec 2018</h5>
                 <p>
                   <em>Sekolah Menengah Kebangsaan Pahi</em>
                 </p>
@@ -169,11 +133,13 @@ function Resume() {
               </div>
             </div>
 
+            {/* Right column — Professional Experience */}
             <div className="col-lg-6" data-aos="fade-up" data-aos-delay="200">
               <h3 className="resume-title">Professional Experience</h3>
+
               <div className="resume-item">
                 <h4>Software Developer</h4>
-                <h5>Aug 2024 - Present</h5>
+                <h5>Aug 2024 – Present</h5>
                 <p>
                   <em>Webgeaz Sdn Bhd</em>
                 </p>
@@ -188,7 +154,7 @@ function Resume() {
 
               <div className="resume-item">
                 <h4>Full Stack Developer (Internship)</h4>
-                <h5>Oct 2023 - Feb 2024</h5>
+                <h5>Oct 2023 – Feb 2024</h5>
                 <p>
                   <em>Institute For Artificial Intelligence And Big Data (AIBIG, UMK)</em>
                 </p>
