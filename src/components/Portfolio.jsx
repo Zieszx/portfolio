@@ -84,7 +84,7 @@ function Portfolio() {
             <MagicCard
               key={project.id}
               className="group flex h-full flex-col border border-ink/10 bg-surface dark:border-white/10 dark:bg-surface-dark">
-              {project.featured && <BorderBeam />}
+              {project.featured && <BorderBeam className="rounded-2xl" />}
 
               {/* Image + badges + action links */}
               <div className="relative h-52 w-full overflow-hidden">
