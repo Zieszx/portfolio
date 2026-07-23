@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { cn } from '../../lib/cn';
 
-export function MagicCard({ children, className, gradientColor = '#00b4d8', gradientSize = 220 }) {
+export function MagicCard({ children, className, gradientColor = '#00b4d8', gradientSize = 220, style }) {
   const ref = useRef(null);
 
   const handleMouseMove = (e) => {
@@ -19,6 +19,7 @@ export function MagicCard({ children, className, gradientColor = '#00b4d8', grad
       className={cn('relative overflow-hidden rounded-2xl', className)}
       style={{
         '--gradient-size': `${gradientSize}px`,
+        ...style,
       }}>
       <div
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 [.group:hover_&]:opacity-100"

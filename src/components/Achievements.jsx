@@ -1,3 +1,8 @@
+import { useRef } from 'react';
+import { useScrollReveal } from '../lib/motion';
+import { MagicCard } from './magicui/MagicCard';
+import { AnimatedGradientText } from './magicui/AnimatedGradientText';
+
 const achievements = [
   {
     icon: 'bi-trophy-fill',
@@ -30,34 +35,51 @@ const achievements = [
 ];
 
 function Achievements() {
+  const headerRef = useRef(null);
+  const gridRef = useRef(null);
+
+  useScrollReveal(headerRef);
+  useScrollReveal(gridRef, { stagger: 0.1, delay: 0.1 });
+
   return (
-    <div className="container px-4 px-md-5">
-      <section id="achievements" className="achievements section">
-        <div className="container section-title" data-aos="fade-up">
-          <h2>Achievements</h2>
-          <p>Recognition and accomplishments throughout my academic and professional journey.</p>
+    <section id="achievements" className="relative bg-bg py-24 dark:bg-bg-dark sm:py-32">
+      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+        {/* Header */}
+        <div ref={headerRef} className="max-w-2xl">
+          <AnimatedGradientText>Achievements</AnimatedGradientText>
+          <h1 className="mt-4 font-heading text-4xl font-bold tracking-tight text-ink dark:text-white sm:text-5xl">
+            Recognition Along The Way.
+          </h1>
+          <p className="mt-4 text-ink/60 dark:text-white/60">
+            Recognition and accomplishments throughout my academic and professional journey.
+          </p>
         </div>
 
-        <div className="container">
-          <div className="row gy-4">
-            {achievements.map((item, index) => (
-              <div key={index} className="col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay={`${(index + 1) * 100}`}>
-                <div className="achievement-item" style={{ borderLeftColor: item.color }}>
-                  <div className="icon" style={{ background: `linear-gradient(135deg, ${item.color}, ${item.color}cc)` }}>
-                    <i className={`bi ${item.icon}`}></i>
-                  </div>
-                  <div className="achievement-body">
-                    <h4 className="title">{item.title}</h4>
-                    <h5 className="period" style={{ color: item.color }}>{item.period}</h5>
-                    <p className="description">{item.description}</p>
-                  </div>
-                </div>
+        {/* Achievement cards */}
+        <div ref={gridRef} className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2">
+          {achievements.map((item, index) => (
+            <MagicCard
+              key={index}
+              gradientColor={item.color}
+              className="group flex h-full gap-5 border border-ink/10 border-l-4 bg-surface p-7 dark:border-white/10 dark:bg-surface-dark"
+              style={{ borderLeftColor: item.color }}>
+              <div
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-xl text-white shadow-md"
+                style={{ background: `linear-gradient(135deg, ${item.color}, ${item.color}cc)` }}>
+                <i className={`bi ${item.icon}`} aria-hidden="true"></i>
               </div>
-            ))}
-          </div>
+              <div>
+                <h4 className="font-heading text-lg font-semibold text-ink dark:text-white">{item.title}</h4>
+                <h5 className="mt-1 text-sm font-semibold" style={{ color: item.color }}>
+                  {item.period}
+                </h5>
+                <p className="mt-3 text-sm leading-relaxed text-ink/60 dark:text-white/60">{item.description}</p>
+              </div>
+            </MagicCard>
+          ))}
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }
 
