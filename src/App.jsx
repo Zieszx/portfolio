@@ -88,11 +88,9 @@ function AppContent() {
   useEffect(() => {
     const root = document.documentElement;
     if (themeMode === 'dark') {
-      root.classList.add('dark-mode');
-      root.classList.remove('light-mode');
+      root.classList.add('dark');
     } else {
-      root.classList.remove('dark-mode');
-      root.classList.add('light-mode');
+      root.classList.remove('dark');
     }
   }, [themeMode]);
 
