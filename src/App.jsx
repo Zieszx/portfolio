@@ -282,7 +282,7 @@ function Footer() {
           Reserved
         </p>
         <p className="mt-2 text-xs text-ink/50 dark:text-white/50">
-          Passionate Software Developer &bull; AI Enthusiast &bull; Problem Solver
+          Passionate Software Engineer &bull; AI Enthusiast &bull; Problem Solver
         </p>
       </div>
     </footer>

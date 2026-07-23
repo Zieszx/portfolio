@@ -117,7 +117,7 @@ function About() {
             {/* Content */}
             <div className="lg:col-span-8">
               <h2 className="font-heading text-2xl font-semibold text-ink dark:text-white">
-                Software Developer &amp; Engineer
+                Software Engineer &amp; Full-Stack Developer
               </h2>
               <p className="mt-4 italic leading-relaxed text-ink/70 dark:text-white/70">
                 I am a Software Engineer with two years of professional experience across enterprise stacks
