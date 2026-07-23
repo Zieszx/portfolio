@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { toggleTheme } from './store/themeSlice';
-// main.css / custom.css are pulled in from src/index.css inside an explicit
-// `layer(legacy)` so Tailwind's utilities (incl. `dark:`) always outrank
-// them — importing them again here would reintroduce an unlayered,
-// higher-priority copy and silently undo that.
+import { initLenis } from './lib/lenis';
+import { cn } from './lib/cn';
 import profileImg from './assets/my-profile-img.jpg';
 
 import Home from './components/Home';
@@ -62,12 +60,22 @@ function ScrollPageNav() {
   if (!nextPath || !visible) return null;
 
   return (
-    <button className="scroll-page-nav" onClick={() => navigate(nextPath)} aria-label={`Go to ${nextLabel}`}>
-      <span className="scroll-page-nav-label">
-        <i className="bi bi-arrow-right-circle-fill"></i>
-        Continue to <strong>{nextLabel}</strong>
+    <button
+      onClick={() => navigate(nextPath)}
+      aria-label={`Go to ${nextLabel}`}
+      className={cn(
+        'group fixed bottom-7 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2.5 whitespace-nowrap rounded-full',
+        'border border-accent/40 bg-ink/90 px-5 py-2.5 shadow-[0_6px_28px_rgba(0,0,0,0.4)] backdrop-blur-md',
+        'transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-accent hover:bg-accent/20',
+        'animate-scroll-nav-in'
+      )}>
+      <span className="flex items-center gap-2 text-[13px] font-medium text-white/80">
+        <i className="bi bi-arrow-right-circle-fill text-accent" aria-hidden="true"></i>
+        Continue to <strong className="font-semibold text-white">{nextLabel}</strong>
       </span>
-      <i className="bi bi-chevron-right scroll-page-nav-chevron"></i>
+      <i
+        className="bi bi-chevron-right text-sm text-accent transition-transform duration-200 group-hover:translate-x-1"
+        aria-hidden="true"></i>
     </button>
   );
 }
@@ -83,7 +91,6 @@ function ScrollToTop() {
 function AppContent() {
   const [mobileNavActive, setMobileNavActive] = useState(false);
   const location = useLocation();
-  const dispatch = useDispatch();
   const themeMode = useSelector((state) => state.theme.mode);
 
   // Apply theme class to root element
@@ -96,7 +103,13 @@ function AppContent() {
     }
   }, [themeMode]);
 
-  // Initial setup — AOS only (Typed + PureCounter are handled inside their own components)
+  // Mount Lenis smooth scroll for the lifetime of the app
+  useEffect(() => {
+    const destroy = initLenis();
+    return destroy;
+  }, []);
+
+  // Hide the preloader once the app has mounted
   useEffect(() => {
     const preloader = document.querySelector('#preloader');
     if (preloader) {
@@ -104,26 +117,7 @@ function AppContent() {
         preloader.style.display = 'none';
       }, 500);
     }
-
-    setTimeout(() => {
-      if (window.AOS) {
-        window.AOS.init({
-          duration: 700,
-          easing: 'ease-in-out',
-          once: true,
-          mirror: false,
-        });
-      }
-    }, 300);
   }, []);
-
-  // Refresh AOS on every route change so new page elements animate
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (window.AOS) window.AOS.refresh();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [location]);
 
   // Close mobile nav when route changes
   useEffect(() => {
@@ -133,14 +127,20 @@ function AppContent() {
   const toggleMobileNav = () => setMobileNavActive((prev) => !prev);
 
   return (
-    <div className={`index-page ${mobileNavActive ? 'mobile-nav-active' : ''}`}>
+    <div className="min-h-screen bg-bg dark:bg-bg-dark">
       <ScrollToTop />
       <Header toggleMobileNav={toggleMobileNav} mobileNavActive={mobileNavActive} />
 
       {/* Click-outside overlay for mobile nav */}
-      {mobileNavActive && <div className="mobile-nav-overlay" onClick={() => setMobileNavActive(false)} aria-hidden="true" />}
+      {mobileNavActive && (
+        <div
+          className="fixed inset-0 z-30 bg-ink/60 backdrop-blur-sm xl:hidden"
+          onClick={() => setMobileNavActive(false)}
+          aria-hidden="true"
+        />
+      )}
 
-      <main className="main">
+      <main className="xl:pl-72">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -156,7 +156,9 @@ function AppContent() {
       {location.pathname !== '/' && <Footer />}
       <ScrollTopBtn />
       <ScrollPageNav />
-      <div id="preloader"></div>
+      <div id="preloader" className="fixed inset-0 z-[999999] flex items-center justify-center bg-bg dark:bg-bg-dark">
+        <span className="h-12 w-12 animate-spin rounded-full border-4 border-accent border-t-transparent" aria-hidden="true" />
+      </div>
     </div>
   );
 }
@@ -169,124 +171,119 @@ function App() {
   );
 }
 
+const NAV_LINKS = [
+  { to: '/', label: 'Home', icon: 'bi-house' },
+  { to: '/about', label: 'About', icon: 'bi-person' },
+  { to: '/resume', label: 'Resume', icon: 'bi-file-earmark-text' },
+  { to: '/portfolio', label: 'Portfolio', icon: 'bi-images' },
+  { to: '/skills', label: 'Skills', icon: 'bi-gear' },
+  { to: '/achievements', label: 'Achievements', icon: 'bi-trophy' },
+  { to: '/services', label: 'Services', icon: 'bi-briefcase' },
+  { to: '/contact', label: 'Contact', icon: 'bi-envelope' },
+];
+
+const SOCIAL_LINKS = [
+  { href: 'https://github.com/Zieszx', icon: 'bi-github', label: 'GitHub' },
+  { href: 'https://www.linkedin.com/in/ieskandar-zulqarnain/', icon: 'bi-linkedin', label: 'LinkedIn' },
+  { href: 'https://instagram.com/zieskandar_', icon: 'bi-instagram', label: 'Instagram' },
+  { href: 'mailto:ieskandarzulqarnain@gmail.com', icon: 'bi-envelope', label: 'Email' },
+  { href: 'https://wa.me/60149161793', icon: 'bi-whatsapp', label: 'WhatsApp' },
+];
+
 function Header({ toggleMobileNav, mobileNavActive }) {
   const location = useLocation();
   const dispatch = useDispatch();
   const themeMode = useSelector((state) => state.theme.mode);
 
-  const isActive = (path) => {
-    if (path === '/' && location.pathname === '/') return 'active';
-    if (path !== '/' && location.pathname === path) return 'active';
-    return '';
-  };
+  const isActive = (path) => (path === '/' ? location.pathname === '/' : location.pathname === path);
 
   return (
-    <header id="header" className={`header dark-background d-flex flex-column ${mobileNavActive ? 'header-show' : ''}`}>
+    <>
+      {/* Floating toggle — mobile/tablet only, always above the sidebar & overlay */}
       <button
-        className="header-toggle d-xl-none bi bi-list mobile-nav-toggle"
         onClick={toggleMobileNav}
         aria-label="Toggle navigation"
         aria-expanded={mobileNavActive}
-      />
+        aria-controls="header"
+        className="fixed right-5 top-5 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-accent text-white shadow-lg shadow-accent/30 transition-transform duration-200 hover:-translate-y-0.5 active:scale-95 xl:hidden">
+        <i className={`bi ${mobileNavActive ? 'bi-x-lg' : 'bi-list'} text-xl`} aria-hidden="true"></i>
+      </button>
 
-      <div className="profile-img">
-        <img src={profileImg} alt="Ieskandar Zulqarnain" className="img-fluid rounded-circle" />
-      </div>
+      <header
+        id="header"
+        className={cn(
+          'fixed inset-y-0 left-0 z-40 flex w-72 flex-col overflow-y-auto border-r border-white/10 bg-ink px-6 py-10 text-white',
+          'transition-transform duration-300 ease-in-out xl:translate-x-0',
+          mobileNavActive ? 'translate-x-0' : '-translate-x-full'
+        )}>
+        <img
+          src={profileImg}
+          alt="Ieskandar Zulqarnain"
+          className="mx-auto h-28 w-28 rounded-full border-4 border-white/10 object-cover shadow-lg shadow-accent/10"
+        />
 
-      <Link to="/" className="logo d-flex align-items-center justify-content-center">
-        <h1 className="sitename">Ieskandar Zulqarnain</h1>
-      </Link>
+        <Link
+          to="/"
+          className="mt-5 text-center font-heading text-xl font-bold tracking-tight text-white transition-colors hover:text-accent">
+          Ieskandar Zulqarnain
+        </Link>
 
-      <div className="social-links text-center">
-        <a href="https://github.com/Zieszx" target="_blank" rel="noopener noreferrer" className="github" aria-label="GitHub">
-          <i className="bi bi-github"></i>
-        </a>
-        <a href="https://www.linkedin.com/in/ieskandar-zulqarnain/" target="_blank" rel="noopener noreferrer" className="linkedin" aria-label="LinkedIn">
-          <i className="bi bi-linkedin"></i>
-        </a>
-        <a href="https://instagram.com/zieskandar_" target="_blank" rel="noopener noreferrer" className="instagram" aria-label="Instagram">
-          <i className="bi bi-instagram"></i>
-        </a>
-        <a href="mailto:ieskandarzulqarnain@gmail.com" className="email" aria-label="Email">
-          <i className="bi bi-envelope"></i>
-        </a>
-        <a href="https://wa.me/60149161793" target="_blank" rel="noopener noreferrer" className="whatsapp" aria-label="WhatsApp">
-          <i className="bi bi-whatsapp"></i>
-        </a>
-      </div>
+        <div className="mt-5 flex justify-center gap-2">
+          {SOCIAL_LINKS.map((s) => (
+            <a
+              key={s.label}
+              href={s.href}
+              target={s.href.startsWith('http') ? '_blank' : undefined}
+              rel={s.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+              aria-label={s.label}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-sm text-white/70 transition-colors hover:bg-accent hover:text-white">
+              <i className={`bi ${s.icon}`} aria-hidden="true"></i>
+            </a>
+          ))}
+        </div>
 
-      {/* Dark / Light mode toggle */}
-      <div className="theme-toggle-wrap text-center">
         <button
-          className="theme-toggle-btn"
           onClick={() => dispatch(toggleTheme())}
           aria-label={`Switch to ${themeMode === 'light' ? 'dark' : 'light'} mode`}
-          title={`Switch to ${themeMode === 'light' ? 'dark' : 'light'} mode`}>
-          <i className={`bi ${themeMode === 'light' ? 'bi-moon-stars-fill' : 'bi-sun-fill'}`}></i>
-          <span>{themeMode === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+          title={`Switch to ${themeMode === 'light' ? 'dark' : 'light'} mode`}
+          className="mx-auto mt-6 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white/70 transition-colors hover:border-accent/50 hover:text-white">
+          <i className={`bi ${themeMode === 'light' ? 'bi-moon-stars-fill' : 'bi-sun-fill'} text-accent`} aria-hidden="true"></i>
+          {themeMode === 'light' ? 'Dark Mode' : 'Light Mode'}
         </button>
-      </div>
 
-      <nav id="navmenu" className="navmenu">
-        <ul>
-          <li>
-            <Link to="/" className={isActive('/')}>
-              <i className="bi bi-house navicon"></i>Home
-            </Link>
-          </li>
-          <li>
-            <Link to="/about" className={isActive('/about')}>
-              <i className="bi bi-person navicon"></i> About
-            </Link>
-          </li>
-          <li>
-            <Link to="/resume" className={isActive('/resume')}>
-              <i className="bi bi-file-earmark-text navicon"></i> Resume
-            </Link>
-          </li>
-          <li>
-            <Link to="/portfolio" className={isActive('/portfolio')}>
-              <i className="bi bi-images navicon"></i> Portfolio
-            </Link>
-          </li>
-          <li>
-            <Link to="/skills" className={isActive('/skills')}>
-              <i className="bi bi-gear navicon"></i> Skills
-            </Link>
-          </li>
-          <li>
-            <Link to="/achievements" className={isActive('/achievements')}>
-              <i className="bi bi-trophy navicon"></i> Achievements
-            </Link>
-          </li>
-          <li>
-            <Link to="/services" className={isActive('/services')}>
-              <i className="bi bi-briefcase navicon"></i> Services
-            </Link>
-          </li>
-          <li>
-            <Link to="/contact" className={isActive('/contact')}>
-              <i className="bi bi-envelope navicon"></i> Contact
-            </Link>
-          </li>
-        </ul>
-      </nav>
-    </header>
+        <nav id="navmenu" className="mt-8 flex-1">
+          <ul className="space-y-1 pb-6 font-nav text-sm">
+            {NAV_LINKS.map((link) => (
+              <li key={link.to}>
+                <Link
+                  to={link.to}
+                  className={cn(
+                    'flex items-center gap-3 rounded-lg px-4 py-2.5 font-medium text-white/55 transition-colors',
+                    isActive(link.to) ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
+                  )}>
+                  <i className={cn('bi text-base', link.icon, isActive(link.to) ? 'text-accent' : '')} aria-hidden="true"></i>
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </header>
+    </>
   );
 }
 
 function Footer() {
   return (
-    <footer id="footer" className="footer position-relative light-background">
-      <div className="container">
-        <div className="copyright text-center">
-          <p>
-            © <span>Copyright</span> <strong className="px-1 sitename">Ieskandar Zulqarnain</strong> <span>All Rights Reserved</span>
-          </p>
-        </div>
-        <div className="credits text-center">
-          <p>Passionate Software Developer &bull; AI Enthusiast &bull; Problem Solver</p>
-        </div>
+    <footer className="border-t border-ink/10 bg-surface py-10 dark:border-white/10 dark:bg-surface-dark xl:pl-72">
+      <div className="mx-auto max-w-7xl px-6 text-center sm:px-8">
+        <p className="text-sm text-ink/70 dark:text-white/70">
+          © Copyright <strong className="px-1 font-heading text-ink dark:text-white">Ieskandar Zulqarnain</strong> All Rights
+          Reserved
+        </p>
+        <p className="mt-2 text-xs text-ink/50 dark:text-white/50">
+          Passionate Software Developer &bull; AI Enthusiast &bull; Problem Solver
+        </p>
       </div>
     </footer>
   );
@@ -304,13 +301,17 @@ function ScrollTopBtn() {
   return (
     <a
       href="#"
-      className={`scroll-top d-flex align-items-center justify-content-center ${visible ? 'active' : ''}`}
       onClick={(e) => {
         e.preventDefault();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }}
-      aria-label="Scroll to top">
-      <i className="bi bi-arrow-up-short"></i>
+      aria-label="Scroll to top"
+      className={cn(
+        'fixed bottom-7 right-7 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-accent text-white shadow-lg shadow-accent/30',
+        'transition-all duration-300 ease-in-out hover:-translate-y-1',
+        visible ? 'visible translate-y-0 opacity-100' : 'invisible translate-y-3 opacity-0'
+      )}>
+      <i className="bi bi-arrow-up-short text-2xl" aria-hidden="true"></i>
     </a>
   );
 }
