@@ -1,5 +1,7 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import resumePdf from '/assets/resume/IESKANDARZULQARNAIN_Resume.pdf';
 import heroBg from '/assets/img/hero-bg.jpg?url';
 import { cn } from '../lib/cn';
@@ -75,14 +77,70 @@ const ghostBtnClasses = cn(
 );
 
 function Home() {
+  const heroSectionRef = useRef(null);
+  const heroBgRef = useRef(null);
   const heroTextRef = useRef(null);
   const heroStatsRef = useRef(null);
   const featuredGridRef = useRef(null);
   const processGridRef = useRef(null);
   const teaserRef = useRef(null);
 
-  useScrollReveal(heroTextRef, { stagger: 0.08 });
-  useScrollReveal(heroStatsRef, { stagger: 0.1, delay: 0.3 });
+  // Hero entrance — a dedicated timeline, not gated behind useScrollReveal's
+  // ScrollTrigger. The hero is always in the initial viewport, so a
+  // scroll-triggered reveal here was either instant or inconsistently timed
+  // depending on load conditions. This plays automatically on mount,
+  // staggering in: eyebrow → name → typing role → tagline → tech badges →
+  // CTAs → social icons (all direct children of heroTextRef, in DOM order),
+  // then the stat panel slides in on an overlapping beat.
+  useEffect(() => {
+    const textEl = heroTextRef.current;
+    const statsEl = heroStatsRef.current;
+    if (!textEl || !statsEl) return undefined;
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      tl.fromTo(
+        textEl.children,
+        { autoAlpha: 0, y: 32 },
+        { autoAlpha: 1, y: 0, duration: 0.85, stagger: 0.12 }
+      ).fromTo(
+        statsEl.children,
+        { autoAlpha: 0, y: 32, scale: 0.94 },
+        { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, stagger: 0.08 },
+        '-=0.55'
+      );
+    }, heroSectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  // Hero background parallax — the bg image drifts as the section scrolls
+  // past, tied to scroll position via ScrollTrigger's scrub.
+  useEffect(() => {
+    const section = heroSectionRef.current;
+    const bg = heroBgRef.current;
+    if (!section || !bg) return undefined;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        bg,
+        { yPercent: -8 },
+        {
+          yPercent: 8,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: section,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          },
+        }
+      );
+    }, heroSectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   useScrollReveal(featuredGridRef, { stagger: 0.12 });
   useScrollReveal(processGridRef, { stagger: 0.1 });
   useScrollReveal(teaserRef);
@@ -90,10 +148,22 @@ function Home() {
   return (
     <>
       {/* ===== Hero ===== */}
-      <section id="hero" className="relative isolate overflow-hidden bg-ink text-white">
-        <img src={heroBg} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />
+      <section ref={heroSectionRef} id="hero" className="relative isolate overflow-hidden bg-ink text-white">
+        <img
+          ref={heroBgRef}
+          src={heroBg}
+          alt=""
+          className="absolute inset-0 h-[120%] w-full scale-110 object-cover opacity-25 will-change-transform"
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/90 to-ink" />
         <DotPattern className="absolute inset-0 text-accent/30" />
+        {/* Subtle grain texture for depth on the dark hero */}
+        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.07] mix-blend-overlay" aria-hidden="true">
+          <filter id="hero-grain">
+            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch" />
+          </filter>
+          <rect width="100%" height="100%" filter="url(#hero-grain)" />
+        </svg>
 
         <div className="relative z-10 mx-auto grid max-w-7xl gap-16 px-6 py-28 sm:px-8 lg:grid-cols-[1.6fr_1fr] lg:items-center lg:px-12 lg:py-36">
           {/* Left — text content */}
@@ -103,7 +173,7 @@ function Home() {
               Hello, I&apos;m
             </p>
 
-            <h1 className="mt-6 font-heading text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+            <h1 className="mt-6 font-heading text-6xl font-bold leading-[0.95] tracking-tighter sm:text-7xl lg:text-8xl xl:text-9xl">
               Ieskandar Zulqarnain
             </h1>
 
@@ -187,54 +257,85 @@ function Home() {
       <section className="relative bg-bg py-24 dark:bg-bg-dark sm:py-32">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
           <AnimatedGradientText>01 — Featured Work</AnimatedGradientText>
-          <h2 className="mt-4 max-w-2xl font-heading text-4xl font-bold tracking-tight text-ink dark:text-white sm:text-5xl">
+          <h2 className="mt-4 max-w-2xl font-heading text-5xl font-bold tracking-tight text-ink dark:text-white sm:text-6xl">
             Projects People Actually Use.
           </h2>
           <p className="mt-4 max-w-xl text-ink/60 dark:text-white/60">
             Five production systems built for real clients — live platforms, not portfolio filler.
           </p>
 
-          <div ref={featuredGridRef} className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredProjects.map((project) => (
-              <article
-                key={project.id}
-                className="group relative overflow-hidden rounded-2xl border border-ink/10 bg-surface p-7 dark:border-white/10 dark:bg-surface-dark">
-                <BorderBeam />
-                <h3 className="font-heading text-xl font-semibold text-ink dark:text-white">{project.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-ink/60 dark:text-white/60">{project.description}</p>
+          <div ref={featuredGridRef} className="mt-14 grid gap-6 sm:grid-cols-2">
+            {featuredProjects.map((project, i) => {
+              const isLead = i === 0;
+              return (
+                <article
+                  key={project.id}
+                  className={cn(
+                    'group relative overflow-hidden rounded-2xl border border-ink/10 bg-surface dark:border-white/10 dark:bg-surface-dark',
+                    'transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl',
+                    isLead ? 'p-8 sm:col-span-2 sm:p-12' : 'p-7'
+                  )}>
+                  <BorderBeam size={isLead ? 320 : 220} duration={isLead ? 9 : 12} />
+                  <h3
+                    className={cn(
+                      'font-heading font-semibold text-ink dark:text-white',
+                      isLead ? 'text-3xl sm:text-4xl' : 'text-xl sm:text-2xl'
+                    )}>
+                    {project.title}
+                  </h3>
+                  <p
+                    className={cn(
+                      'mt-3 leading-relaxed text-ink/60 dark:text-white/60',
+                      isLead ? 'max-w-2xl text-base sm:text-lg' : 'text-sm'
+                    )}>
+                    {project.description}
+                  </p>
 
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {project.technologies.map((t) => (
-                    <span key={t} className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-xs text-accent">
-                      {t}
-                    </span>
-                  ))}
-                </div>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {project.technologies.map((t) => (
+                      <span key={t} className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-xs text-accent">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
 
-                {project.demo && (
-                  <a
-                    href={project.demo}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-accent transition-all group-hover:gap-2">
-                    See live <span aria-hidden="true">→</span>
-                  </a>
-                )}
-              </article>
-            ))}
+                  {project.demo && (
+                    <a
+                      href={project.demo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-accent transition-all group-hover:gap-2">
+                      See live <span aria-hidden="true">→</span>
+                    </a>
+                  )}
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* ===== Tech stack marquee ===== */}
-      <section className="border-y border-white/10 bg-ink py-8">
+      <section className="flex flex-col gap-5 overflow-hidden border-y border-white/10 bg-ink py-9">
         <Marquee pauseOnHover>
           {marqueeTech.map((tech) => (
             <span
               key={tech}
-              className="flex items-center gap-4 font-heading text-2xl font-semibold text-white/25 transition-colors hover:text-accent sm:text-3xl">
+              className="flex items-center gap-4 font-heading text-3xl font-semibold text-white/40 transition-colors hover:text-accent sm:text-4xl">
               {tech}
-              <span className="text-accent/40" aria-hidden="true">
+              <span className="text-accent/50" aria-hidden="true">
+                /
+              </span>
+            </span>
+          ))}
+        </Marquee>
+        <Marquee reverse pauseOnHover>
+          {marqueeTech.map((tech) => (
+            <span
+              key={`${tech}-r`}
+              className="flex items-center gap-4 font-heading text-xl font-semibold text-white/20 transition-colors hover:text-accent sm:text-2xl">
+              {tech}
+              <span className="text-accent/30" aria-hidden="true">
                 /
               </span>
             </span>
@@ -246,7 +347,7 @@ function Home() {
       <section className="relative bg-surface py-24 dark:bg-surface-dark sm:py-32">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
           <AnimatedGradientText>02 — How I Work</AnimatedGradientText>
-          <h2 className="mt-4 max-w-2xl font-heading text-4xl font-bold tracking-tight text-ink dark:text-white sm:text-5xl">
+          <h2 className="mt-4 max-w-2xl font-heading text-5xl font-bold tracking-tight text-ink dark:text-white sm:text-6xl">
             What I Do, Start to Finish.
           </h2>
 

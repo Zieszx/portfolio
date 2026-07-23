@@ -87,7 +87,7 @@ function About() {
           {/* Header */}
           <div ref={headerRef} className="max-w-2xl">
             <AnimatedGradientText>About</AnimatedGradientText>
-            <h1 className="mt-4 font-heading text-4xl font-bold tracking-tight text-ink dark:text-white sm:text-5xl">
+            <h1 className="mt-4 font-heading text-5xl font-bold tracking-tight text-ink dark:text-white sm:text-6xl">
               Get To Know Me.
             </h1>
             <p className="mt-4 text-ink/60 dark:text-white/60">

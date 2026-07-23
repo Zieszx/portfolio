@@ -41,7 +41,7 @@ function Portfolio() {
         {/* Header */}
         <div className="max-w-2xl">
           <AnimatedGradientText>Portfolio</AnimatedGradientText>
-          <h1 className="mt-4 font-heading text-4xl font-bold tracking-tight text-ink dark:text-white sm:text-5xl">
+          <h1 className="mt-4 font-heading text-5xl font-bold tracking-tight text-ink dark:text-white sm:text-6xl">
             Selected Work, Shipped &amp; Live.
           </h1>
           <p className="mt-4 text-ink/60 dark:text-white/60">
