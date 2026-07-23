@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import resumePdf from '/assets/resume/IESKANDARZULQARNAIN_Resume.pdf';
 import heroBg from '/assets/img/hero-bg.jpg?url';
 import { cn } from '../lib/cn';
