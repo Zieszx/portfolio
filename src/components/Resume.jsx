@@ -1,9 +1,45 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Swal from 'sweetalert2';
 import resumePdf from '/assets/resume/IESKANDARZULQARNAIN_Resume.pdf';
+import { useScrollReveal } from '../lib/motion';
+import { cn } from '../lib/cn';
+import { AnimatedGradientText } from './magicui/AnimatedGradientText';
+
+/* ── Timeline entry — shared visual language for education + experience ── */
+function TimelineDot() {
+  return (
+    <span
+      className="absolute -left-[7px] top-2 h-3 w-3 rounded-full bg-accent ring-4 ring-bg dark:ring-bg-dark"
+      aria-hidden="true"
+    />
+  );
+}
+
+const timelineItemClasses = 'relative border-l-2 border-ink/10 py-1 pl-6 dark:border-white/10';
+const itemTitleClasses = 'font-heading text-base font-semibold text-ink dark:text-white';
+const itemDateClasses = 'mt-0.5 text-sm font-medium text-accent';
+const itemOrgClasses = 'mt-1 text-sm italic text-ink/60 dark:text-white/60';
+const bulletListClasses = 'mt-3 space-y-2 text-sm leading-relaxed text-ink/70 dark:text-white/70';
+
+function Bullet({ children }) {
+  return (
+    <li className="flex items-start gap-2">
+      <i className="bi bi-chevron-right mt-0.5 shrink-0 text-accent" aria-hidden="true"></i>
+      <span>{children}</span>
+    </li>
+  );
+}
 
 function Resume() {
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const headerRef = useRef(null);
+  const summaryRef = useRef(null);
+  const experienceRef = useRef(null);
+
+  useScrollReveal(headerRef);
+  useScrollReveal(summaryRef, { stagger: 0.1, delay: 0.1 });
+  useScrollReveal(experienceRef, { stagger: 0.08, delay: 0.15 });
 
   const handleDownloadResume = async () => {
     setIsDownloading(true);
@@ -41,149 +77,197 @@ function Resume() {
   const handlePreviewResume = () => window.open(resumePdf, '_blank');
 
   return (
-    <div className="container px-4 px-md-5">
-      <section id="resume" className="resume section">
-        <div className="container section-title" data-aos="fade-up">
-          <h2>Resume</h2>
-          <p>My professional journey — education, experience, and key achievements in software development.</p>
+    <section id="resume" className="relative bg-bg py-24 dark:bg-bg-dark sm:py-32">
+      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+        {/* Header */}
+        <div ref={headerRef} className="max-w-2xl">
+          <AnimatedGradientText>Resume</AnimatedGradientText>
+          <h1 className="mt-4 font-heading text-4xl font-bold tracking-tight text-ink dark:text-white sm:text-5xl">
+            My Professional Journey.
+          </h1>
+          <p className="mt-4 text-ink/60 dark:text-white/60">
+            Education, experience, and key achievements in software development — from client-facing platforms
+            to AI-driven tools.
+          </p>
 
-          <div className="resume-actions d-flex justify-content-center gap-3 flex-wrap pt-3">
+          {/* Actions */}
+          <div className="mt-8 flex flex-wrap items-center gap-4">
             <button
               onClick={handleDownloadResume}
               disabled={isDownloading}
-              className="resume-btn resume-btn-primary"
-              onMouseOver={(e) => {
-                if (!isDownloading) {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 180, 216, 0.35)';
-                }
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}>
-              <i className={`bi ${isDownloading ? 'bi-hourglass-split' : 'bi-download'}`}></i>
+              className={cn(
+                'relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full px-7 py-3.5',
+                'bg-accent font-medium text-white transition-all hover:-translate-y-0.5',
+                'hover:shadow-[0_8px_25px_rgba(0,180,216,0.35)] disabled:pointer-events-none disabled:opacity-70'
+              )}>
+              <i className={`bi ${isDownloading ? 'bi-hourglass-split' : 'bi-download'}`} aria-hidden="true"></i>
               {isDownloading ? 'Downloading…' : 'Download Resume'}
             </button>
 
             <button
               onClick={handlePreviewResume}
-              className="resume-btn resume-btn-outline"
-              onMouseOver={(e) => {
-                e.currentTarget.style.background = 'var(--accent-color)';
-                e.currentTarget.style.color = 'white';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 180, 216, 0.3)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = 'var(--accent-color)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}>
-              <i className="bi bi-eye"></i>
+              className={cn(
+                'inline-flex items-center justify-center gap-2 rounded-full border border-ink/15 px-7 py-3.5',
+                'font-medium text-ink transition-all hover:-translate-y-0.5 hover:border-accent hover:bg-accent hover:text-white',
+                'hover:shadow-[0_8px_25px_rgba(0,180,216,0.3)] dark:border-white/15 dark:text-white'
+              )}>
+              <i className="bi bi-eye" aria-hidden="true"></i>
               Preview Resume
             </button>
           </div>
         </div>
 
-        <div className="container">
-          <div className="row">
-            {/* Left column — Summary + Education */}
-            <div className="col-lg-6" data-aos="fade-up" data-aos-delay="100">
-              <h3 className="resume-title">Summary</h3>
-              <div className="resume-item pb-0">
-                <h4>Ieskandar Zulqarnain</h4>
-                <p>
-                  <em>Passionate and self-motivated Software Developer with over a year of professional experience in full-stack development, R&amp;D software projects, and AI-driven solutions. Eager to contribute technical skills and problem-solving abilities to innovative projects.</em>
+        {/* Two-column layout */}
+        <div className="mt-16 grid grid-cols-1 gap-14 lg:grid-cols-2 lg:gap-12">
+          {/* Left column — Summary + Education */}
+          <div ref={summaryRef} className="flex flex-col gap-12">
+            <div>
+              <h2 className="font-heading text-2xl font-semibold text-ink dark:text-white">Summary</h2>
+              <div className="mt-6">
+                <h3 className={itemTitleClasses}>Ieskandar Zulqarnain</h3>
+                <p className="mt-2 italic leading-relaxed text-ink/70 dark:text-white/70">
+                  Software Engineer with two years of professional experience delivering full-stack web
+                  applications, R&amp;D software, and AI features. Works across enterprise stacks (Java/Spring
+                  Boot, PHP/Laravel, and the in-house SOAD framework) and modern JavaScript (React.js and
+                  Next.js/TypeScript).
                 </p>
-                <ul>
-                  <li>Shah Alam, Selangor, Malaysia</li>
-                  <li>+60 14-916 1793</li>
-                  <li>ieskandarzulqarnain@gmail.com</li>
+                <ul className="mt-4 space-y-2 text-sm text-ink/60 dark:text-white/60">
+                  <li className="flex items-center gap-2">
+                    <i className="bi bi-geo-alt text-accent" aria-hidden="true"></i>
+                    Shah Alam, Selangor, Malaysia
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <i className="bi bi-telephone text-accent" aria-hidden="true"></i>
+                    +60 14-916 1793
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <i className="bi bi-envelope text-accent" aria-hidden="true"></i>
+                    ieskandarzulqarnain@gmail.com
+                  </li>
                 </ul>
-              </div>
-
-              <h3 className="resume-title">Education</h3>
-              <div className="resume-item">
-                <h4>Bachelor of Computer Science (Software Engineering)</h4>
-                <h5>Oct 2020 – Oct 2024</h5>
-                <p>
-                  <em>Universiti Teknologi Malaysia (UTM)</em>
-                </p>
-                <p>CGPA: 3.96 — Dean&apos;s List every semester. Specialised in Data Structures &amp; Algorithms, Databases, Software Engineering, and Real-Time Software Engineering.</p>
-              </div>
-
-              <div className="resume-item">
-                <h4>Science Stream Module</h4>
-                <h5>Apr 2019 – Apr 2020</h5>
-                <p>
-                  <em>Kelantan Matriculation College (KMKt)</em>
-                </p>
-                <p>CGPA: 3.96</p>
-              </div>
-
-              <div className="resume-item">
-                <h4>Science Stream SPM</h4>
-                <h5>Jan 2017 – Dec 2018</h5>
-                <p>
-                  <em>Sekolah Menengah Kebangsaan Pahi</em>
-                </p>
-                <p>Results: 3A+ 4A 1A- 1C+</p>
               </div>
             </div>
 
-            {/* Right column — Professional Experience */}
-            <div className="col-lg-6" data-aos="fade-up" data-aos-delay="200">
-              <h3 className="resume-title">Professional Experience</h3>
+            <div>
+              <h2 className="font-heading text-2xl font-semibold text-ink dark:text-white">Education</h2>
+              <div className="mt-6 flex flex-col gap-8">
+                <div className={timelineItemClasses}>
+                  <TimelineDot />
+                  <h4 className={itemTitleClasses}>Bachelor of Computer Science (Software Engineering)</h4>
+                  <h5 className={itemDateClasses}>Oct 2020 – Oct 2024</h5>
+                  <p className={itemOrgClasses}>Universiti Teknologi Malaysia (UTM)</p>
+                  <p className="mt-2 text-sm leading-relaxed text-ink/70 dark:text-white/70">
+                    CGPA: 3.96 — Dean&apos;s List every semester. Specialised in Data Structures &amp; Algorithms,
+                    Databases, Software Engineering, and Real-Time Software Engineering.
+                  </p>
+                </div>
 
-              <div className="resume-item">
-                <h4>Software Developer</h4>
-                <h5>Aug 2024 – Present</h5>
-                <p>
-                  <em>Webgeaz Sdn Bhd</em>
-                </p>
-                <ul>
-                  <li>Developed Dashboard PIWN system for JAWHAR to monitor Wakaf, Zakat, and Haji tasks</li>
-                  <li>Created AI code prediction system for SOAD framework using RESTful APIs</li>
-                  <li>Built Ezapp booking management system using React.js and SOAD framework</li>
-                  <li>Applied PWA concepts to enhance user experience</li>
-                  <li>Improved SOAD framework by creating reusable base templates</li>
+                <div className={timelineItemClasses}>
+                  <TimelineDot />
+                  <h4 className={itemTitleClasses}>Science Stream Module</h4>
+                  <h5 className={itemDateClasses}>Apr 2019 – Apr 2020</h5>
+                  <p className={itemOrgClasses}>Kelantan Matriculation College (KMKt)</p>
+                  <p className="mt-2 text-sm leading-relaxed text-ink/70 dark:text-white/70">CGPA: 3.96</p>
+                </div>
+
+                <div className={timelineItemClasses}>
+                  <TimelineDot />
+                  <h4 className={itemTitleClasses}>Science Stream SPM</h4>
+                  <h5 className={itemDateClasses}>Jan 2017 – Dec 2018</h5>
+                  <p className={itemOrgClasses}>Sekolah Menengah Kebangsaan Pahi</p>
+                  <p className="mt-2 text-sm leading-relaxed text-ink/70 dark:text-white/70">Results: 3A+ 4A 1A- 1C+</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right column — Professional Experience */}
+          <div ref={experienceRef}>
+            <h2 className="font-heading text-2xl font-semibold text-ink dark:text-white">Professional Experience</h2>
+
+            <div className="mt-6 flex flex-col gap-8">
+              {/* Webgeaz — Software Engineer / Software Developer */}
+              <div className={timelineItemClasses}>
+                <TimelineDot />
+                <h4 className={itemTitleClasses}>Software Engineer</h4>
+                <h5 className={itemDateClasses}>Apr 2026 – Present</h5>
+                <h4 className={cn('pt-2', itemTitleClasses)}>Software Developer</h4>
+                <h5 className={itemDateClasses}>Aug 2024 – Mar 2026</h5>
+                <p className={itemOrgClasses}>Webgeaz Sdn Bhd</p>
+                <ul className={bulletListClasses}>
+                  <Bullet>
+                    Built a Personal Evaluation module using the OpenAI API, with timesheet data pulled from the
+                    Oceztra system, to help generate staff evaluations
+                  </Bullet>
+                  <Bullet>
+                    Developed Dashboard PIWN for JAWHAR to track ongoing Wakaf, Zakat, and Haji tasks, moving the
+                    team off manual filing and Excel
+                  </Bullet>
+                  <Bullet>Built AUDEZIA (audit management) and INXEPTA (e-commerce) client systems on the SOAD framework with MySQL</Bullet>
+                  <Bullet>
+                    Added AI code prediction to the SOAD framework using LLM APIs from several providers, and built
+                    a reusable base template for new projects
+                  </Bullet>
+                  <Bullet>Built the Ezy Booking System (EzApp) with React.js and the SOAD framework, with PWA support for mobile</Bullet>
+                  <Bullet>Run internal AI training sessions, helping colleagues use AI tools effectively</Bullet>
                 </ul>
               </div>
 
-              <div className="resume-item">
-                <h4>Full Stack Developer (Internship)</h4>
-                <h5>Oct 2023 – Feb 2024</h5>
-                <p>
-                  <em>Institute For Artificial Intelligence And Big Data (AIBIG, UMK)</em>
-                </p>
-                <ul>
-                  <li>Developed AIBIG Main Website using Spring Boot MVC with MySQL integration</li>
-                  <li>Built AIBIG Research Assessment System (AIRAS) using Django with MySQL</li>
-                  <li>Created RESTful APIs using Python and Java for internal usage</li>
-                  <li>Implemented JavaScript plugins for enhanced functionality</li>
-                  <li>Collaborated with AIBIG staff on system development and troubleshooting</li>
+              {/* Freelance — Nuvera / Meet Nuvera */}
+              <div className={timelineItemClasses}>
+                <TimelineDot />
+                <h4 className={itemTitleClasses}>Part-Time Software Developer · Sole Developer</h4>
+                <h5 className={itemDateClasses}>Jan 2025 – Present</h5>
+                <p className={itemOrgClasses}>Freelance</p>
+                <ul className={bulletListClasses}>
+                  <Bullet>
+                    <strong className="text-ink dark:text-white">Nuvera (NuveraRose)</strong> — MLM e-commerce
+                    platform (Laravel 10/PHP): sole developer of a platform helping members earn passive income
+                    selling beauty products, with a member base mostly in Africa. Built the member, genealogy,
+                    role/permission, auditing, reporting (Excel &amp; PDF), and product-management modules. Live
+                    in production.
+                  </Bullet>
+                  <Bullet>
+                    <strong className="text-ink dark:text-white">Meet Nuvera</strong> (formerly Meet Valorra) —
+                    dating app (Next.js, TypeScript, PostgreSQL): sole developer of a dating app with matching,
+                    swipe, profiles, and real-time chat, built with Drizzle ORM, NextAuth, and Socket.io, deployed
+                    on a Contabo VPS.
+                  </Bullet>
                 </ul>
               </div>
 
-              <div className="resume-item">
-                <h4>Software Engineer (Internship)</h4>
-                <h5>Aug 2022</h5>
-                <p>
-                  <em>DreamEDGE</em>
-                </p>
-                <ul>
-                  <li>Created Software Testing Documentation (STD) for KAWBRA unmanned ground vehicle</li>
-                  <li>Assisted with Arduino and Raspberry Pi troubleshooting and rewiring</li>
-                  <li>Fixed Arduino code and helped with hardware integration</li>
+              {/* AIBIG — content unchanged */}
+              <div className={timelineItemClasses}>
+                <TimelineDot />
+                <h4 className={itemTitleClasses}>Full Stack Developer (Internship)</h4>
+                <h5 className={itemDateClasses}>Oct 2023 – Feb 2024</h5>
+                <p className={itemOrgClasses}>Institute For Artificial Intelligence And Big Data (AIBIG, UMK)</p>
+                <ul className={bulletListClasses}>
+                  <Bullet>Developed AIBIG Main Website using Spring Boot MVC with MySQL integration</Bullet>
+                  <Bullet>Built AIBIG Research Assessment System (AIRAS) using Django with MySQL</Bullet>
+                  <Bullet>Created RESTful APIs using Python and Java for internal usage</Bullet>
+                  <Bullet>Implemented JavaScript plugins for enhanced functionality</Bullet>
+                  <Bullet>Collaborated with AIBIG staff on system development and troubleshooting</Bullet>
+                </ul>
+              </div>
+
+              {/* DreamEDGE — content unchanged */}
+              <div className={timelineItemClasses}>
+                <TimelineDot />
+                <h4 className={itemTitleClasses}>Software Engineer (Internship)</h4>
+                <h5 className={itemDateClasses}>Aug 2022</h5>
+                <p className={itemOrgClasses}>DreamEDGE</p>
+                <ul className={bulletListClasses}>
+                  <Bullet>Created Software Testing Documentation (STD) for KAWBRA unmanned ground vehicle</Bullet>
+                  <Bullet>Assisted with Arduino and Raspberry Pi troubleshooting and rewiring</Bullet>
+                  <Bullet>Fixed Arduino code and helped with hardware integration</Bullet>
                 </ul>
               </div>
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }
 
