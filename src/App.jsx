@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { toggleTheme } from './store/themeSlice';
-import './main.css';
-import './custom.css';
+// main.css / custom.css are pulled in from src/index.css inside an explicit
+// `layer(legacy)` so Tailwind's utilities (incl. `dark:`) always outrank
+// them — importing them again here would reintroduce an unlayered,
+// higher-priority copy and silently undo that.
 import profileImg from './assets/my-profile-img.jpg';
 
 import Home from './components/Home';
