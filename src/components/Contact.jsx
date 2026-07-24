@@ -1,7 +1,35 @@
 import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { useScrollReveal } from '../lib/motion';
 import { AnimatedGradientText } from './magicui/AnimatedGradientText';
-import { ShimmerButton } from './magicui/ShimmerButton';
+import SpotlightCard from './ui/SpotlightCard';
+import MotionButton from './ui/MotionButton';
+import LetsWorkSection from './ui/LetsWorkSection';
+
+/* Aliased at module scope so the `motion` import counts as used for lint. */
+const MotionDiv = motion.div;
+
+const revealViewport = { once: true, amount: 0.3 };
+const riseIn = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 0.61, 0.36, 1] } },
+};
+const staggerParent = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } };
+
+const socials = [
+  { href: 'https://github.com/Zieszx', icon: 'bi-github', label: 'GitHub' },
+  { href: 'https://www.linkedin.com/in/ieskandar-zulqarnain/', icon: 'bi-linkedin', label: 'LinkedIn' },
+  { href: 'https://instagram.com/zieskandar_', icon: 'bi-instagram', label: 'Instagram' },
+  { href: 'mailto:ieskandarzulqarnain@gmail.com', icon: 'bi-envelope', label: 'Email' },
+  { href: 'https://wa.me/60149161793', icon: 'bi-whatsapp', label: 'WhatsApp' },
+];
+
+const renderRouterLink = ({ href, className, children, ...rest }) => (
+  <Link to={href} className={className} {...rest}>
+    {children}
+  </Link>
+);
 
 const contactInfo = [
   { icon: 'bi-geo-alt-fill', title: 'Address', content: 'Shah Alam, Selangor, Malaysia', link: null },
@@ -13,9 +41,10 @@ const contactInfo = [
 ];
 
 const inputClass =
-  'w-full rounded-xl border border-ink/15 bg-bg px-4 py-3 text-sm text-ink placeholder:text-ink/40 transition-colors ' +
-  'focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 ' +
-  'dark:border-white/15 dark:bg-bg-dark dark:text-white dark:placeholder:text-white/30';
+  'w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-sm text-ink placeholder:text-ink/45 ' +
+  'transition-[border-color,box-shadow,background-color] duration-200 hover:border-accent/40 ' +
+  'focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40 focus:ring-offset-0 ' +
+  'dark:border-white/20 dark:bg-surface-dark dark:text-white dark:placeholder:text-white/40';
 
 const labelClass = 'mb-2 block text-sm font-medium text-ink dark:text-white';
 
@@ -24,12 +53,8 @@ function Contact() {
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
 
   const headerRef = useRef(null);
-  const infoRef = useRef(null);
-  const formRef = useRef(null);
 
   useScrollReveal(headerRef);
-  useScrollReveal(infoRef, { stagger: 0.08, delay: 0.1 });
-  useScrollReveal(formRef, { delay: 0.15 });
 
   const handleChange = (e) => setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -52,8 +77,9 @@ function Contact() {
   };
 
   return (
-    <section id="contact" className="relative bg-bg py-24 dark:bg-bg-dark sm:py-32">
-      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+    <>
+      <section id="contact" className="relative bg-bg/70 py-24 dark:bg-bg-dark/70 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
         {/* Header */}
         <div ref={headerRef} className="max-w-2xl">
           <AnimatedGradientText>Contact</AnimatedGradientText>
@@ -68,37 +94,52 @@ function Contact() {
         {/* Info + form */}
         <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-12">
           {/* Contact info */}
-          <div ref={infoRef} className="flex flex-col gap-4 lg:col-span-5">
+          <MotionDiv
+            initial="hidden"
+            whileInView="visible"
+            viewport={revealViewport}
+            variants={staggerParent}
+            className="flex flex-col gap-4 lg:col-span-5">
             {contactInfo.map((item, i) => (
-              <div
-                key={i}
-                className="group flex items-start gap-4 rounded-2xl border border-ink/10 bg-surface p-5 transition-colors hover:border-accent/40 dark:border-white/10 dark:bg-surface-dark">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent/10 text-lg text-accent dark:bg-accent/15">
-                  <i className={`bi ${item.icon}`} aria-hidden="true"></i>
-                </div>
-                <div>
-                  <h3 className="font-heading text-base font-semibold text-ink dark:text-white">{item.title}</h3>
-                  {item.link ? (
-                    <a
-                      href={item.link}
-                      target={item.link.startsWith('http') ? '_blank' : undefined}
-                      rel="noopener noreferrer"
-                      className="mt-1 inline-block text-sm text-ink/60 transition-colors hover:text-accent dark:text-white/60">
-                      {item.content}
-                    </a>
-                  ) : (
-                    <p className="mt-1 text-sm text-ink/60 dark:text-white/60">{item.content}</p>
-                  )}
-                </div>
-              </div>
+              <MotionDiv key={i} variants={riseIn}>
+                <SpotlightCard className="h-full p-5">
+                  {/* SpotlightCard wraps children in its own div, so the flex row
+                      lives one level in rather than on the card itself. */}
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent/10 text-lg text-accent dark:bg-accent/15">
+                      <i className={`bi ${item.icon}`} aria-hidden="true"></i>
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-base font-semibold text-ink dark:text-white">{item.title}</h3>
+                      {item.link ? (
+                        <a
+                          href={item.link}
+                          target={item.link.startsWith('http') ? '_blank' : undefined}
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-block text-sm text-ink/60 transition-colors hover:text-accent dark:text-white/60">
+                          {item.content}
+                        </a>
+                      ) : (
+                        <p className="mt-1 text-sm text-ink/60 dark:text-white/60">{item.content}</p>
+                      )}
+                    </div>
+                  </div>
+                </SpotlightCard>
+              </MotionDiv>
             ))}
-          </div>
+          </MotionDiv>
 
           {/* Contact form */}
-          <div ref={formRef} className="lg:col-span-7">
-            <form
+          <MotionDiv
+            initial="hidden"
+            whileInView="visible"
+            viewport={revealViewport}
+            variants={riseIn}
+            className="lg:col-span-7">
+            <SpotlightCard
+              as="form"
               onSubmit={handleSubmit}
-              className="rounded-2xl border border-ink/10 bg-surface p-6 dark:border-white/10 dark:bg-surface-dark sm:p-8">
+              className="p-6 sm:p-8">
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <label htmlFor="name-field" className={labelClass}>
@@ -179,26 +220,31 @@ function Contact() {
                     </p>
                   )}
 
-                  <ShimmerButton type="submit" disabled={status === 'loading'} className="w-full sm:w-auto">
-                    {status === 'loading' ? (
-                      <>
-                        <i className="bi bi-hourglass-split" aria-hidden="true"></i>
-                        Opening…
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-send-fill" aria-hidden="true"></i>
-                        Send Message
-                      </>
-                    )}
-                  </ShimmerButton>
+                  <MotionButton
+                    type="submit"
+                    icon={status === 'loading' ? 'bi-hourglass-split' : 'bi-send'}
+                    disabled={status === 'loading'}
+                    className="w-full py-3.5 sm:w-auto">
+                    {status === 'loading' ? 'Opening…' : 'Send Message'}
+                  </MotionButton>
                 </div>
               </div>
-            </form>
+            </SpotlightCard>
+          </MotionDiv>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Closing CTA band */}
+      <LetsWorkSection
+        ctaLabel="See my work"
+        ctaHref="/portfolio"
+        secondaryLabel="What I do"
+        secondaryHref="/services"
+        socials={socials}
+        renderLink={renderRouterLink}
+      />
+    </>
   );
 }
 

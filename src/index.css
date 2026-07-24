@@ -25,6 +25,10 @@ body {
   background-color: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-body);
+  /* The fixed cursor spotlight is a 520px square translated to the pointer, so it
+     can extend past the right edge; keep it from ever producing a sideways scroll.
+     Applied to <body> (not the app root) so no new scroll container is created. */
+  overflow-x: hidden;
 }
 
 :root.dark body {
@@ -41,6 +45,57 @@ body {
   animation: marquee 30s linear infinite;
 }
 
+/* ── BackgroundPaths ─────────────────────────────────────────────────────
+   The ambient arc field behind every route. The arcs are static geometry;
+   only the two <svg> layers move, and only via `transform` + `opacity`, both
+   of which Chromium runs on the compositor. Nothing here dirties the layer,
+   so the field rasterises once and then costs effectively no main-thread
+   work — unlike the previous per-path pathLength/pathOffset JS tweens.
+
+   Every path carries pathLength="1", so this dash pattern is in normalised
+   path units and reads identically across all 24 curves. */
+.pathfield-arc {
+  stroke-dasharray: 0.62 0.38;
+}
+
+.pathfield-layer {
+  will-change: transform, opacity;
+  animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  animation-iteration-count: infinite;
+}
+
+@keyframes pathfield-arcs-drift-a {
+  0%   { transform: translate3d(0, 0, 0);         opacity: 0.6; }
+  50%  { transform: translate3d(-4.5%, 3%, 0);    opacity: 1; }
+  100% { transform: translate3d(0, 0, 0);         opacity: 0.6; }
+}
+
+@keyframes pathfield-arcs-drift-b {
+  0%   { transform: translate3d(0, 0, 0);         opacity: 1; }
+  50%  { transform: translate3d(4%, -3.5%, 0);    opacity: 0.55; }
+  100% { transform: translate3d(0, 0, 0);         opacity: 1; }
+}
+
+.pathfield-layer-a { animation-name: pathfield-arcs-drift-a; animation-duration: 34s; }
+.pathfield-layer-b { animation-name: pathfield-arcs-drift-b; animation-duration: 47s; }
+
+/* Backgrounded tabs: stop the field outright rather than relying on the
+   browser's own rendering throttle. */
+.pathfield-paused .pathfield-layer {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pathfield-layer {
+    animation: none;
+    will-change: auto;
+    opacity: 0.8;
+  }
+  .pathfield-arc {
+    stroke-dasharray: none;
+  }
+}
+
 @keyframes border-beam {
   100% { offset-distance: 100%; }
 }
@@ -54,8 +109,23 @@ body {
   to { background-position: 200% center; }
 }
 
-.animate-gradient-text {
+/* Idle-cost note: `background-position` on a `background-clip: text` element is
+   not compositable — Chromium re-rasterises the glyph mask every frame, and with
+   a live backdrop underneath the translucent sections that invalidation cascades
+   across the whole viewport. Profiling put this single eyebrow label at ~30
+   percentage points of idle main-thread time on every route. The sweep is now a
+   hover reward instead of a permanent loop: identical look at rest, free when
+   nobody is pointing at it. */
+.gradient-text-sweep:hover,
+.gradient-text-sweep:focus-visible {
   animation: gradient-text 4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-text-sweep:hover,
+  .gradient-text-sweep:focus-visible {
+    animation: none;
+  }
 }
 
 @keyframes scroll-nav-in {
@@ -65,4 +135,24 @@ body {
 
 .animate-scroll-nav-in {
   animation: scroll-nav-in 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Sidebar scrolls when the 8 gradient pills exceed a short viewport; a default
+   platform scrollbar cuts a bright stripe through the dark glassy panel. */
+#header {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 180, 216, 0.35) transparent;
+}
+
+#header::-webkit-scrollbar {
+  width: 6px;
+}
+
+#header::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#header::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 180, 216, 0.35);
+  border-radius: 9999px;
 }

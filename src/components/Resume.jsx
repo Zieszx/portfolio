@@ -4,6 +4,8 @@ import resumePdf from '/assets/resume/IESKANDARZULQARNAIN_Resume.pdf';
 import { useScrollReveal } from '../lib/motion';
 import { cn } from '../lib/cn';
 import { AnimatedGradientText } from './magicui/AnimatedGradientText';
+import SpotlightCard from './ui/SpotlightCard';
+import MotionButton from './ui/MotionButton';
 
 /* ── Timeline entry — shared visual language for education + experience ── */
 function TimelineDot() {
@@ -15,7 +17,19 @@ function TimelineDot() {
   );
 }
 
-const timelineItemClasses = 'relative border-l-2 border-ink/10 py-1 pl-6 dark:border-white/10';
+/* The rail + dot live on the wrapper, OUTSIDE the SpotlightCard, so the card's
+   `overflow-hidden` can never clip them. */
+const timelineRailClasses = 'relative border-l-2 border-ink/10 py-1 pl-6 dark:border-white/10';
+
+function TimelineItem({ children }) {
+  return (
+    <div className={timelineRailClasses}>
+      <TimelineDot />
+      <SpotlightCard className="p-5">{children}</SpotlightCard>
+    </div>
+  );
+}
+
 const itemTitleClasses = 'font-heading text-base font-semibold text-ink dark:text-white';
 const itemDateClasses = 'mt-0.5 text-sm font-medium text-accent';
 const itemOrgClasses = 'mt-1 text-sm italic text-ink/60 dark:text-white/60';
@@ -77,7 +91,7 @@ function Resume() {
   const handlePreviewResume = () => window.open(resumePdf, '_blank');
 
   return (
-    <section id="resume" className="relative bg-bg py-24 dark:bg-bg-dark sm:py-32">
+    <section id="resume" className="relative bg-bg/70 py-24 dark:bg-bg-dark/70 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
         {/* Header */}
         <div ref={headerRef} className="max-w-2xl">
@@ -92,28 +106,21 @@ function Resume() {
 
           {/* Actions */}
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <button
+            <MotionButton
               onClick={handleDownloadResume}
               disabled={isDownloading}
-              className={cn(
-                'relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full px-7 py-3.5',
-                'bg-accent font-medium text-white transition-all hover:-translate-y-0.5',
-                'hover:shadow-[0_8px_25px_rgba(0,180,216,0.35)] disabled:pointer-events-none disabled:opacity-70'
-              )}>
-              <i className={`bi ${isDownloading ? 'bi-hourglass-split' : 'bi-download'}`} aria-hidden="true"></i>
+              icon={isDownloading ? 'bi-hourglass-split' : 'bi-download'}
+              className="px-7 py-3.5">
               {isDownloading ? 'Downloading…' : 'Download Resume'}
-            </button>
+            </MotionButton>
 
-            <button
+            <MotionButton
               onClick={handlePreviewResume}
-              className={cn(
-                'inline-flex items-center justify-center gap-2 rounded-full border border-ink/15 px-7 py-3.5',
-                'font-medium text-ink transition-all hover:-translate-y-0.5 hover:border-accent hover:bg-accent hover:text-white',
-                'hover:shadow-[0_8px_25px_rgba(0,180,216,0.3)] dark:border-white/15 dark:text-white'
-              )}>
-              <i className="bi bi-eye" aria-hidden="true"></i>
+              variant="ghost"
+              icon="bi-eye"
+              className="px-7 py-3.5">
               Preview Resume
-            </button>
+            </MotionButton>
           </div>
         </div>
 
@@ -123,7 +130,7 @@ function Resume() {
           <div ref={summaryRef} className="flex flex-col gap-12">
             <div>
               <h2 className="font-heading text-2xl font-semibold text-ink dark:text-white">Summary</h2>
-              <div className="mt-6">
+              <SpotlightCard className="mt-6 p-5">
                 <h3 className={itemTitleClasses}>Ieskandar Zulqarnain</h3>
                 <p className="mt-2 italic leading-relaxed text-ink/70 dark:text-white/70">
                   Software Engineer with two years of professional experience delivering full-stack web
@@ -145,14 +152,13 @@ function Resume() {
                     ieskandarzulqarnain@gmail.com
                   </li>
                 </ul>
-              </div>
+              </SpotlightCard>
             </div>
 
             <div>
               <h2 className="font-heading text-2xl font-semibold text-ink dark:text-white">Education</h2>
               <div className="mt-6 flex flex-col gap-8">
-                <div className={timelineItemClasses}>
-                  <TimelineDot />
+                <TimelineItem>
                   <h4 className={itemTitleClasses}>Bachelor of Computer Science (Software Engineering)</h4>
                   <h5 className={itemDateClasses}>Oct 2020 – Oct 2024</h5>
                   <p className={itemOrgClasses}>Universiti Teknologi Malaysia (UTM)</p>
@@ -160,23 +166,21 @@ function Resume() {
                     CGPA: 3.96 — Dean&apos;s List every semester. Specialised in Data Structures &amp; Algorithms,
                     Databases, Software Engineering, and Real-Time Software Engineering.
                   </p>
-                </div>
+                </TimelineItem>
 
-                <div className={timelineItemClasses}>
-                  <TimelineDot />
+                <TimelineItem>
                   <h4 className={itemTitleClasses}>Science Stream Module</h4>
                   <h5 className={itemDateClasses}>Apr 2019 – Apr 2020</h5>
                   <p className={itemOrgClasses}>Kelantan Matriculation College (KMKt)</p>
                   <p className="mt-2 text-sm leading-relaxed text-ink/70 dark:text-white/70">CGPA: 3.96</p>
-                </div>
+                </TimelineItem>
 
-                <div className={timelineItemClasses}>
-                  <TimelineDot />
+                <TimelineItem>
                   <h4 className={itemTitleClasses}>Science Stream SPM</h4>
                   <h5 className={itemDateClasses}>Jan 2017 – Dec 2018</h5>
                   <p className={itemOrgClasses}>Sekolah Menengah Kebangsaan Pahi</p>
                   <p className="mt-2 text-sm leading-relaxed text-ink/70 dark:text-white/70">Results: 3A+ 4A 1A- 1C+</p>
-                </div>
+                </TimelineItem>
               </div>
             </div>
           </div>
@@ -187,8 +191,7 @@ function Resume() {
 
             <div className="mt-6 flex flex-col gap-8">
               {/* Webgeaz — Software Engineer / Software Developer */}
-              <div className={timelineItemClasses}>
-                <TimelineDot />
+              <TimelineItem>
                 <h4 className={itemTitleClasses}>Software Engineer</h4>
                 <h5 className={itemDateClasses}>Apr 2026 – Present</h5>
                 <h4 className={cn('pt-2', itemTitleClasses)}>Software Developer</h4>
@@ -211,11 +214,10 @@ function Resume() {
                   <Bullet>Built the Ezy Booking System (EzApp) with React.js and the SOAD framework, with PWA support for mobile</Bullet>
                   <Bullet>Run internal AI training sessions, helping colleagues use AI tools effectively</Bullet>
                 </ul>
-              </div>
+              </TimelineItem>
 
               {/* Freelance — Nuvera / Meet Nuvera */}
-              <div className={timelineItemClasses}>
-                <TimelineDot />
+              <TimelineItem>
                 <h4 className={itemTitleClasses}>Part-Time Software Developer · Sole Developer</h4>
                 <h5 className={itemDateClasses}>Jan 2025 – Present</h5>
                 <p className={itemOrgClasses}>Freelance</p>
@@ -234,11 +236,10 @@ function Resume() {
                     on a Contabo VPS.
                   </Bullet>
                 </ul>
-              </div>
+              </TimelineItem>
 
               {/* AIBIG — content unchanged */}
-              <div className={timelineItemClasses}>
-                <TimelineDot />
+              <TimelineItem>
                 <h4 className={itemTitleClasses}>Full Stack Developer (Internship)</h4>
                 <h5 className={itemDateClasses}>Oct 2023 – Feb 2024</h5>
                 <p className={itemOrgClasses}>Institute For Artificial Intelligence And Big Data (AIBIG, UMK)</p>
@@ -249,11 +250,10 @@ function Resume() {
                   <Bullet>Implemented JavaScript plugins for enhanced functionality</Bullet>
                   <Bullet>Collaborated with AIBIG staff on system development and troubleshooting</Bullet>
                 </ul>
-              </div>
+              </TimelineItem>
 
               {/* DreamEDGE — content unchanged */}
-              <div className={timelineItemClasses}>
-                <TimelineDot />
+              <TimelineItem>
                 <h4 className={itemTitleClasses}>Software Engineer (Internship)</h4>
                 <h5 className={itemDateClasses}>Aug 2022</h5>
                 <p className={itemOrgClasses}>DreamEDGE</p>
@@ -262,7 +262,7 @@ function Resume() {
                   <Bullet>Assisted with Arduino and Raspberry Pi troubleshooting and rewiring</Bullet>
                   <Bullet>Fixed Arduino code and helped with hardware integration</Bullet>
                 </ul>
-              </div>
+              </TimelineItem>
             </div>
           </div>
         </div>

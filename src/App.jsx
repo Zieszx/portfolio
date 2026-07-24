@@ -6,6 +6,9 @@ import { initLenis } from './lib/lenis';
 import { cn } from './lib/cn';
 import profileImg from './assets/my-profile-img.jpg';
 
+import BackgroundPaths from './components/ui/BackgroundPaths';
+import CursorSpotlight from './components/ui/CursorSpotlight';
+
 import Home from './components/Home';
 import About from './components/About';
 import Resume from './components/Resume';
@@ -64,7 +67,11 @@ function ScrollPageNav() {
       onClick={() => navigate(nextPath)}
       aria-label={`Go to ${nextLabel}`}
       className={cn(
+        /* Both this and ScrollTopBtn are z-40 at bottom-7. They clear each other
+           down to ~360px; below that the centred pill runs into the corner
+           button, so it lifts onto its own row. */
         'group fixed bottom-7 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2.5 whitespace-nowrap rounded-full',
+        'max-[380px]:bottom-24',
         'border border-accent/40 bg-ink/90 px-5 py-2.5 shadow-[0_6px_28px_rgba(0,0,0,0.4)] backdrop-blur-md',
         'transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-accent hover:bg-accent/20',
         'animate-scroll-nav-in'
@@ -127,7 +134,28 @@ function AppContent() {
   const toggleMobileNav = () => setMobileNavActive((prev) => !prev);
 
   return (
-    <div className="min-h-screen bg-bg dark:bg-bg-dark">
+    <div className="relative min-h-screen bg-bg dark:bg-bg-dark">
+      {/* Site-wide interactive backdrop.
+          z-0 is the floor of the app's stacking context: <main>/<footer> are z-10,
+          the mobile overlay z-30, sidebar + scroll controls z-40, preloader z-[999999].
+          Page sections above sit on a ~70% scrim rather than an opaque fill, so this
+          layer reads through the whole document instead of only through the sidebar.
+
+          `/` runs at the same opacity as every other route: Home's hero section is
+          the one deliberately opaque block on the site (AetherFlowHero owns that
+          viewport outright and occludes this layer completely), so there is never a
+          moment where both fields compete. Dimming to 0.18 only starved the four
+          translucent sections *below* the hero of the same backdrop every other
+          route gets. */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+        {/* The horizontal fan that used to be a `scale-x-[1.8]` on this wrapper is
+            now baked into the component's viewBox. An ancestor transform stopped
+            Chromium from compositing the field's own drift animation, which made
+            the whole thing repaint on the main thread every frame. */}
+        <BackgroundPaths />
+        <CursorSpotlight />
+      </div>
+
       <ScrollToTop />
       <Header toggleMobileNav={toggleMobileNav} mobileNavActive={mobileNavActive} />
 
@@ -140,7 +168,12 @@ function AppContent() {
         />
       )}
 
-      <main className="xl:pl-72">
+      {/* `overflow-x-clip` (not `hidden`) contains decorative elements whose
+          bounding box exceeds the viewport — e.g. the rotating dashed ring on
+          /about, whose square bbox swells by ~1.41x mid-spin and pushed the
+          document 28px wider than a 390px viewport. `clip` establishes no
+          scroll container, so position:sticky inside still works. */}
+      <main className="relative z-10 overflow-x-clip xl:pl-72">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -191,6 +224,10 @@ const SOCIAL_LINKS = [
 ];
 
 function Header({ toggleMobileNav, mobileNavActive }) {
+  /* The drawer is only ever open below `xl`, where there is no hover to expand
+     the pills — without this every item but the active one renders as a bare,
+     unlabelled icon. On `xl` the sidebar is always visible and mobileNavActive
+     stays false, so desktop keeps its hover-to-expand behaviour. */
   const location = useLocation();
   const dispatch = useDispatch();
   const themeMode = useSelector((state) => state.theme.mode);
@@ -209,26 +246,30 @@ function Header({ toggleMobileNav, mobileNavActive }) {
         <i className={`bi ${mobileNavActive ? 'bi-x-lg' : 'bi-list'} text-xl`} aria-hidden="true"></i>
       </button>
 
+      {/* The sidebar is dark in BOTH themes, so it carries the `dark` class itself.
+          The `dark` custom-variant matches `.dark *`, so anything theme-aware dropped
+          in here resolves its dark palette even while the site is in light mode. */}
       <header
         id="header"
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-72 flex-col overflow-y-auto border-r border-white/10 bg-ink px-6 py-10 text-white',
+          'dark fixed inset-y-0 left-0 z-40 flex w-72 flex-col overflow-y-auto overflow-x-hidden px-5 py-8 text-white',
+          'border-r border-accent/15 bg-ink/85 backdrop-blur-xl',
           'transition-transform duration-300 ease-in-out xl:translate-x-0',
           mobileNavActive ? 'translate-x-0' : '-translate-x-full'
         )}>
         <img
           src={profileImg}
           alt="Ieskandar Zulqarnain"
-          className="mx-auto h-28 w-28 rounded-full border-4 border-white/10 object-cover shadow-lg shadow-accent/10"
+          className="mx-auto h-24 w-24 rounded-full border-4 border-white/10 object-cover shadow-lg shadow-accent/10"
         />
 
         <Link
           to="/"
-          className="mt-5 text-center font-heading text-xl font-bold tracking-tight text-white transition-colors hover:text-accent">
+          className="mt-4 text-center font-heading text-lg font-bold tracking-tight text-white transition-colors hover:text-accent">
           Ieskandar Zulqarnain
         </Link>
 
-        <div className="mt-5 flex justify-center gap-2">
+        <div className="mt-4 flex justify-center gap-2">
           {SOCIAL_LINKS.map((s) => (
             <a
               key={s.label}
@@ -246,26 +287,48 @@ function Header({ toggleMobileNav, mobileNavActive }) {
           onClick={() => dispatch(toggleTheme())}
           aria-label={`Switch to ${themeMode === 'light' ? 'dark' : 'light'} mode`}
           title={`Switch to ${themeMode === 'light' ? 'dark' : 'light'} mode`}
-          className="mx-auto mt-6 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white/70 transition-colors hover:border-accent/50 hover:text-white">
+          className="mx-auto mt-5 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white/70 transition-colors hover:border-accent/50 hover:text-white">
           <i className={`bi ${themeMode === 'light' ? 'bi-moon-stars-fill' : 'bi-sun-fill'} text-accent`} aria-hidden="true"></i>
           {themeMode === 'light' ? 'Dark Mode' : 'Light Mode'}
         </button>
 
-        <nav id="navmenu" className="mt-8 flex-1">
-          <ul className="space-y-1 pb-6 font-nav text-sm">
-            {NAV_LINKS.map((link) => (
-              <li key={link.to}>
-                <Link
-                  to={link.to}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-4 py-2.5 font-medium text-white/55 transition-colors',
-                    isActive(link.to) ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
-                  )}>
-                  <i className={cn('bi text-base', link.icon, isActive(link.to) ? 'text-accent' : '')} aria-hidden="true"></i>
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+        <nav id="navmenu" className="mt-6 flex-1 pb-4">
+          <ul className="flex flex-col gap-1 font-nav">
+            {NAV_LINKS.map((link) => {
+              const active = isActive(link.to);
+              return (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      'group relative flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium',
+                      'transition-all duration-200 ease-out',
+                      active
+                        ? 'bg-accent/15 text-white'
+                        : 'text-white/60 hover:translate-x-1 hover:bg-white/5 hover:text-white'
+                    )}>
+                    {/* Accent left-bar marks the active route (and previews on hover). */}
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        'absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-accent transition-all duration-200',
+                        active ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
+                      )}
+                    />
+                    <i
+                      className={cn(
+                        'bi text-base transition-colors',
+                        link.icon,
+                        active ? 'text-accent' : 'text-white/50 group-hover:text-accent'
+                      )}
+                      aria-hidden="true"
+                    />
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </header>
@@ -275,7 +338,7 @@ function Header({ toggleMobileNav, mobileNavActive }) {
 
 function Footer() {
   return (
-    <footer className="border-t border-ink/10 bg-surface py-10 dark:border-white/10 dark:bg-surface-dark xl:pl-72">
+    <footer className="relative z-10 border-t border-ink/10 bg-surface/90 py-10 backdrop-blur-sm dark:border-white/10 dark:bg-surface-dark/90 xl:pl-72">
       <div className="mx-auto max-w-7xl px-6 text-center sm:px-8">
         <p className="text-sm text-ink/70 dark:text-white/70">
           © Copyright <strong className="px-1 font-heading text-ink dark:text-white">Ieskandar Zulqarnain</strong> All Rights

@@ -1,7 +1,9 @@
-import { useEffect, useRef } from 'react';
-import { useScrollReveal } from '../lib/motion';
-import { MagicCard } from './magicui/MagicCard';
+import { motion, useReducedMotion } from 'motion/react';
 import { AnimatedGradientText } from './magicui/AnimatedGradientText';
+import SpotlightCard from './ui/SpotlightCard';
+
+/* ESLint here is not JSX-aware — alias motion so the import reads as used. */
+const MotionDiv = motion.div;
 
 const skillCategories = [
   {
@@ -80,21 +82,10 @@ const skillCategories = [
 ];
 
 function Skills() {
-  const gridRef = useRef(null);
-  useScrollReveal(gridRef, { stagger: 0.1 });
-
-  useEffect(() => {
-    // Animate all progress bars from 0 → their target width after mount
-    const timer = setTimeout(() => {
-      document.querySelectorAll('.skills .progress-bar[data-target]').forEach((bar) => {
-        bar.style.width = bar.getAttribute('data-target') + '%';
-      });
-    }, 250);
-    return () => clearTimeout(timer);
-  }, []);
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section id="skills" className="skills relative bg-bg py-24 dark:bg-bg-dark sm:py-32">
+    <section id="skills" className="skills relative bg-bg/70 py-24 dark:bg-bg-dark/70 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
         {/* Header */}
         <div className="max-w-2xl">
@@ -102,50 +93,65 @@ function Skills() {
           <h1 className="mt-4 font-heading text-5xl font-bold tracking-tight text-ink dark:text-white sm:text-6xl">
             Technical Expertise, By Category.
           </h1>
+          {/* Plain <p>: this intro is above the fold, and ScrollReveal is only
+              worth it for copy the reader scrolls down to. */}
           <p className="mt-4 text-ink/60 dark:text-white/60">
-            My toolkit organised by category — from programming languages and frameworks to AI/ML, databases,
-            tooling, and soft skills.
+            My toolkit organised by category — from programming languages and frameworks to AI/ML, databases, tooling,
+            and soft skills.
           </p>
         </div>
 
         {/* Category cards */}
-        <div ref={gridRef} className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-2">
+        <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-2">
           {skillCategories.map((cat, catIdx) => (
-            <MagicCard
+            <MotionDiv
               key={catIdx}
-              className="group border border-ink/10 bg-surface p-7 dark:border-white/10 dark:bg-surface-dark">
-              {/* Category header */}
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-accent/30 bg-accent/10 text-accent">
-                  <i className={`bi ${cat.icon} text-lg`} aria-hidden="true"></i>
-                </div>
-                <h3 className="font-heading text-lg font-semibold text-ink dark:text-white">{cat.label}</h3>
-              </div>
-
-              {/* Progress bars */}
-              <div className="mt-7 flex flex-col gap-5">
-                {cat.skills.map((skill, skillIdx) => (
-                  <div key={skillIdx}>
-                    <div className="flex items-center justify-between text-sm font-medium text-ink dark:text-white">
-                      <span>{skill.name}</span>
-                      <span className="text-ink/50 dark:text-white/50">{skill.level}%</span>
-                    </div>
-                    <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-ink/10 dark:bg-white/10">
-                      {/* width starts at 0; useEffect sets data-target value → triggers CSS transition */}
-                      <div
-                        className="progress-bar h-full rounded-full bg-accent transition-[width] duration-[900ms] ease-out"
-                        role="progressbar"
-                        aria-valuenow={skill.level}
-                        aria-valuemin="0"
-                        aria-valuemax="100"
-                        data-target={skill.level}
-                        style={{ width: 0 }}
-                      />
-                    </div>
+              initial={reduceMotion ? false : { opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.55, delay: (catIdx % 2) * 0.1, ease: [0.22, 0.61, 0.36, 1] }}
+              className="h-full">
+              <SpotlightCard className="h-full p-7">
+                {/* Category header */}
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-accent/30 bg-accent/10 text-accent">
+                    <i className={`bi ${cat.icon} text-lg`} aria-hidden="true"></i>
                   </div>
-                ))}
-              </div>
-            </MagicCard>
+                  <h3 className="font-heading text-lg font-semibold text-ink dark:text-white">{cat.label}</h3>
+                </div>
+
+                {/* Progress bars — each fill grows when the card scrolls into view */}
+                <div className="mt-7 flex flex-col gap-5">
+                  {cat.skills.map((skill, skillIdx) => (
+                    <div key={skillIdx}>
+                      <div className="flex items-center justify-between text-sm font-medium text-ink dark:text-white">
+                        <span>{skill.name}</span>
+                        <span className="text-ink/50 dark:text-white/50">{skill.level}%</span>
+                      </div>
+                      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-ink/10 dark:bg-white/10">
+                        <MotionDiv
+                          className="h-full rounded-full bg-accent"
+                          role="progressbar"
+                          aria-valuenow={skill.level}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label={skill.name}
+                          initial={reduceMotion ? false : { width: 0 }}
+                          whileInView={{ width: `${skill.level}%` }}
+                          viewport={{ once: true, amount: 0.3 }}
+                          transition={{
+                            duration: reduceMotion ? 0 : 0.9,
+                            delay: reduceMotion ? 0 : 0.1 + skillIdx * 0.06,
+                            ease: [0.22, 0.61, 0.36, 1],
+                          }}
+                          style={reduceMotion ? { width: `${skill.level}%` } : undefined}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </SpotlightCard>
+            </MotionDiv>
           ))}
         </div>
       </div>

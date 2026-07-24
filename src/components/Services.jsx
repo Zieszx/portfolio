@@ -1,8 +1,12 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { useScrollReveal } from '../lib/motion';
-import { MagicCard } from './magicui/MagicCard';
 import { AnimatedGradientText } from './magicui/AnimatedGradientText';
+import SpotlightCard from './ui/SpotlightCard';
+
+/* ESLint here is not JSX-aware — alias motion so the import reads as used. */
+const MotionDiv = motion.div;
 
 const services = [
   {
@@ -55,17 +59,24 @@ const services = [
   },
 ];
 
+/* Each card's spotlight is its own accent, held at a low alpha so the six tints
+   still read as one teal-led family rather than six unrelated cards. */
+function spotlightFor(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, 0.22)`;
+}
+
 function Services() {
   const headerRef = useRef(null);
-  const gridRef = useRef(null);
   const ctaRef = useRef(null);
 
   useScrollReveal(headerRef);
-  useScrollReveal(gridRef, { stagger: 0.1, delay: 0.1 });
   useScrollReveal(ctaRef, { delay: 0.15 });
 
   return (
-    <section id="services" className="relative bg-bg py-24 dark:bg-bg-dark sm:py-32">
+    <section id="services" className="relative bg-bg/70 py-24 dark:bg-bg-dark/70 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
         {/* Header */}
         <div ref={headerRef} className="max-w-2xl">
@@ -73,6 +84,8 @@ function Services() {
           <h1 className="mt-4 font-heading text-5xl font-bold tracking-tight text-ink dark:text-white sm:text-6xl">
             What I Can Build For You.
           </h1>
+          {/* Plain <p>: this intro is above the fold, and ScrollReveal is only
+              worth it for copy the reader scrolls down to. */}
           <p className="mt-4 text-ink/60 dark:text-white/60">
             From full-stack web apps to AI-powered tools and mobile experiences — here&apos;s how I can help bring
             your project to life.
@@ -80,37 +93,44 @@ function Services() {
         </div>
 
         {/* Service cards */}
-        <div ref={gridRef} className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {services.map((svc) => (
-            <MagicCard
+        <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {services.map((svc, index) => (
+            <MotionDiv
               key={svc.title}
-              gradientColor={svc.color}
-              className="group flex h-full flex-col border border-ink/10 bg-surface p-7 dark:border-white/10 dark:bg-surface-dark">
-              {/* Icon */}
-              <div
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-xl"
-                style={{ background: `${svc.color}18`, border: `1.5px solid ${svc.color}44`, color: svc.color }}>
-                <i className={`bi ${svc.icon}`} aria-hidden="true"></i>
-              </div>
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.55, delay: (index % 3) * 0.1, ease: [0.22, 0.61, 0.36, 1] }}
+              className="h-full">
+              <SpotlightCard
+                spotlightColor={spotlightFor(svc.color)}
+                className="h-full p-7 [&>div:last-child]:flex [&>div:last-child]:h-full [&>div:last-child]:flex-col">
+                {/* Icon */}
+                <div
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-xl"
+                  style={{ background: `${svc.color}18`, border: `1.5px solid ${svc.color}44`, color: svc.color }}>
+                  <i className={`bi ${svc.icon}`} aria-hidden="true"></i>
+                </div>
 
-              <h3 className="mt-5 font-heading text-lg font-semibold text-ink dark:text-white">{svc.title}</h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-ink/60 dark:text-white/60">{svc.description}</p>
+                <h3 className="mt-5 font-heading text-lg font-semibold text-ink dark:text-white">{svc.title}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-ink/60 dark:text-white/60">{svc.description}</p>
 
-              {/* Tech tags */}
-              <div className="mt-5 flex flex-wrap gap-2">
-                {svc.tech.map((t) => (
-                  <span
-                    key={t}
-                    className="rounded-full border px-2.5 py-1 text-xs"
-                    style={{ color: svc.color, borderColor: `${svc.color}55`, background: `${svc.color}0f` }}>
-                    {t}
-                  </span>
-                ))}
-              </div>
+                {/* Tech tags */}
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {svc.tech.map((t) => (
+                    <span
+                      key={t}
+                      className="rounded-full border px-2.5 py-1 text-xs"
+                      style={{ color: svc.color, borderColor: `${svc.color}55`, background: `${svc.color}0f` }}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
 
-              {/* Accent bottom bar */}
-              <div className="mt-6 h-1 w-full rounded-full transition-opacity" style={{ background: svc.color }} />
-            </MagicCard>
+                {/* Accent bottom bar */}
+                <div className="mt-6 h-1 w-full shrink-0 rounded-full" style={{ background: svc.color }} />
+              </SpotlightCard>
+            </MotionDiv>
           ))}
         </div>
 
